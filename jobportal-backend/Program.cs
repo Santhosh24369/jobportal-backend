@@ -8,6 +8,7 @@ builder.Services.Configure<JobSeekDatabaseSettings>(
 builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<JobServices>();
 builder.Services.AddSingleton<Loginser>();
+builder.Services.AddSingleton<GetJobsSer>();
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(
@@ -28,7 +29,6 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseRouting();
 app.UseCors();
-app.UseLogUrl();
 app.MapGet("/", () => "Hello World!");
 
 app.MapPost("/login", async (Loginser users, Loginmodel User) =>
@@ -48,9 +48,17 @@ app.MapPost("/Signup", async (Loginser usercre, Loginmodel newUser) =>
     await usercre.CreateAsync(newUser);
     return await usercre.GetAsync(newUser.Id);
 });
+app.MapGet("/JoinJobs",async Task<List<GetJobs>> (GetJobsSer test) => {
+    return await test.GetJobs();    
+});
 
 app.MapGet("/GetJobs", async Task<List<JobModel>> (JobServices Job) => {
     return await Job.GetAsync();
+});
+
+app.MapGet("/Organization/{id:length(24)}", async (JobServices Job, string id) =>
+{
+    return await Job.GetorgAsync(id);
 });
 
 app.MapGet("/Jobs/{id:length(24)}", async (JobServices Job, string id) =>

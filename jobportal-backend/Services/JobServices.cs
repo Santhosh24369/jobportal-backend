@@ -7,6 +7,8 @@ namespace jobportal_backend.Services
     {
         private readonly IMongoCollection<JobModel> _jobsCollection;
 
+        private readonly IMongoCollection<Organizationmodel> _organizations;
+
         public JobServices(
         IOptions<JobSeekDatabaseSettings> jobSeekDatabaseSettings)
         {
@@ -18,10 +20,18 @@ namespace jobportal_backend.Services
 
             _jobsCollection = mongoDatabase.GetCollection<JobModel>(
                 jobSeekDatabaseSettings.Value.JobsCollectionName);
+
+            _organizations = mongoDatabase.GetCollection<Organizationmodel>(
+                jobSeekDatabaseSettings.Value.OrganizationName
+                );
         }
 
         public async Task<List<JobModel>> GetAsync() =>
         await _jobsCollection.Find(_ => true).ToListAsync();
+    
+
+        public async Task<Organizationmodel?> GetorgAsync(string id) =>
+            await _organizations.Find(x => x.Id == id).FirstOrDefaultAsync();
 
         public async Task<JobModel?> GetAsync(string id) =>
             await _jobsCollection.Find(x => x.Id == id).FirstOrDefaultAsync();

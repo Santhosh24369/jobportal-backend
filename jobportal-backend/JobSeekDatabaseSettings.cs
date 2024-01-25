@@ -10,6 +10,8 @@
 
         public string UsersCollectionName { get; set; } = null!;
 
+        public string OrganizationName { get; set; } = null!;
+
         public string Log_FilePath { get; set; } = null!;
     }
 }
