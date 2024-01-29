@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Options;
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace jobportal_backend.Services
@@ -29,5 +30,18 @@ namespace jobportal_backend.Services
 
             return pResults;
         }
+        public async Task<GetJobs?> GetJob(ObjectId id)
+        {
+            Console.WriteLine(id);
+            var pResults = await _jobs.Aggregate()
+                 .Match(new BsonDocument { { "_id", id } })
+                 .Lookup<GetJobs, GetJobs>("organizations", "organization", "_id", "organizationdata")
+                 .Unwind("organizationdata")
+                 .Lookup<GetJobs, GetJobs>("users", "organizationdata.user", "_id", "organizationdata.users")
+                 .Unwind<GetJobs>("organizationdata.users")
+                 .FirstOrDefaultAsync();
+
+            return pResults;
         }
+    }
 }

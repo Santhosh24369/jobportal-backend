@@ -1,6 +1,7 @@
 
 using jobportal_backend.Services;
 using jobportal_backend;
+using MongoDB.Bson;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<JobSeekDatabaseSettings>(
@@ -35,21 +36,30 @@ app.MapPost("/login", async (Loginser users, Loginmodel User) =>
 {
 
     var resl = await users.Login(User);
-    if (resl is null || resl.password != User.password)
+    if (resl is null)
     {
         return null;
-
     }
-    return resl;
+    bool isValid = BCrypt.Net.BCrypt.Verify(User.password, resl.password);
+    if (isValid)
+    {
+        return resl;
+    }
+      return null;
 });
 
 app.MapPost("/Signup", async (Loginser usercre, Loginmodel newUser) =>
 {
+    newUser.password = BCrypt.Net.BCrypt.HashPassword(newUser.password);
     await usercre.CreateAsync(newUser);
     return await usercre.GetAsync(newUser.Id);
 });
 app.MapGet("/JoinJobs",async Task<List<GetJobs>> (GetJobsSer test) => {
     return await test.GetJobs();    
+});
+
+app.MapGet("/JoinJob/{id:length(24)}", async  (GetJobsSer testid,ObjectId id) => {
+    return await testid.GetJob(id);
 });
 
 app.MapGet("/GetJobs", async Task<List<JobModel>> (JobServices Job) => {
